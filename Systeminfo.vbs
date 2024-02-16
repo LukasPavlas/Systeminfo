@@ -14,6 +14,8 @@ Next
 Set colAdapters = objWMIService.ExecQuery("Select * from Win32_NetworkAdapter")
 Set colIPConfig = objWMIService.ExecQuery("Select * from Win32_NetworkAdapterConfiguration")
 
+Set colInstalledPrinters = objWMIService.ExecQuery("Select * from Win32_Printer")
+
 Function GetIPAddress(interfaceIndex)
     On Error Resume Next
     For Each objConfig In colIPConfig
@@ -67,6 +69,7 @@ For Each objItem In colItems
 Next
 
 
+
 ' Nastavení cesty k souboru v kořenovém adresáři C:\, relativní cesta k skriptu
 strJsonFilePath = objFSO.BuildPath(strScriptDirectory, "Systeminfo - " & strComputerName & ".json")
 
@@ -95,8 +98,21 @@ For Each strAdapterName In objNetworkAdapters.Keys
     objJsonFile.WriteLine "  },"
 Next
 
+objJsonFile.WriteLine "],"
+
+objJsonFile.WriteLine """Printers"": ["
+
+For Each objPrinter in colInstalledPrinters
+    objJsonFile.WriteLine "  {"
+    objJsonFile.WriteLine "    ""PrinterName"": """ & objPrinter.Name & ""","
+    objJsonFile.WriteLine "    ""PrinterLocation"": """ & objPrinter.Location & ""","
+    objJsonFile.WriteLine "    ""PrinterDefault"": """ & objPrinter.Default & """"
+    objJsonFile.WriteLine "  },"
+Next
+
 objJsonFile.WriteLine ""
 objJsonFile.WriteLine "]}"
+
 objJsonFile.Close
 
 WScript.Echo "Data byla ulozena do " & strJsonFilePath
