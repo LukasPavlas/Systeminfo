@@ -1,2 +1,2 @@
-# update 0.33
+# update v0.33
 -add get printer list
