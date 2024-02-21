@@ -15,6 +15,7 @@ Set colAdapters = objWMIService.ExecQuery("Select * from Win32_NetworkAdapter")
 Set colIPConfig = objWMIService.ExecQuery("Select * from Win32_NetworkAdapterConfiguration")
 
 Set colInstalledPrinters = objWMIService.ExecQuery("Select * from Win32_Printer")
+Set colInstalledPorts = objWMIService.ExecQuery("Select * from Win32_TCPIPPrinterPort")
 
 Function GetIPAddress(interfaceIndex)
     On Error Resume Next
@@ -106,7 +107,19 @@ For Each objPrinter in colInstalledPrinters
     objJsonFile.WriteLine "  {"
     objJsonFile.WriteLine "    ""PrinterName"": """ & objPrinter.Name & ""","
     objJsonFile.WriteLine "    ""PrinterLocation"": """ & objPrinter.Location & ""","
+    objJsonFile.WriteLine "    ""PrinterPortName"": """ & objPrinter.PortName & ""","
     objJsonFile.WriteLine "    ""PrinterDefault"": """ & objPrinter.Default & """"
+    objJsonFile.WriteLine "  },"
+Next
+
+objJsonFile.WriteLine ""
+objJsonFile.WriteLine "],"
+
+objJsonFile.WriteLine """PortsTCPIP"": ["
+
+for Each objPort in colInstalledPorts
+    objJsonFile.WriteLine "  {"
+    objJsonFile.WriteLine "    ""PortName"": """ & objPort.Name & """"
     objJsonFile.WriteLine "  },"
 Next
 
