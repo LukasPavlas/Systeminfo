@@ -69,6 +69,18 @@ For Each objItem In colItems
     strManufacturer = objItem.Manufacturer
 Next
 
+Const ForReading = 1, ForWriting = 2, ForAppending = 8
+Const HKEY_CURRENT_USER = &H80000001
+Const HKEY_LOCAL_MACHINE = &H80000002
+
+strComputer = "."
+ 
+Set oReg=GetObject("winmgmts:{impersonationLevel=impersonate}!\\" & _
+    strComputer & "\root\default:StdRegProv")
+ 
+strKeyPath = "SOFTWARE\TeamViewer"
+strValueName = "ClientID"
+oReg.GetDWORDValue HKEY_LOCAL_MACHINE,strKeyPath,strValueName,dwTVID
 
 
 ' Nastavení cesty k souboru v kořenovém adresáři C:\, relativní cesta k skriptu
@@ -85,6 +97,7 @@ objJsonFile.WriteLine """Model"": """ & strModel & ""","
 objJsonFile.WriteLine """CPU"": """ & strCPUInfo & ""","
 objJsonFile.WriteLine """GPU"": """ & strGPUInfo & ""","
 objJsonFile.WriteLine """RAM"": """ & strRAMInfo & ""","
+objJsonFile.WriteLine """TeamviewerID"": """& dwTVID & ""","
 objJsonFile.WriteLine """NetworkAdapters"": ["
 
 For Each strAdapterName In objNetworkAdapters.Keys
