@@ -1,8 +1,8 @@
 ' Získání aktuálního adresáře, kde je umístěn skript
 Set objFSO = CreateObject("Scripting.FileSystemObject")
-strScriptDirectory = objFSO.GetParentFolderName(WScript.ScriptFullName)
-
 Set objShell = CreateObject("WScript.Shell")
+
+strDesktopPath = objShell.SpecialFolders("Desktop")
 strComputerName = objShell.ExpandEnvironmentStrings("%COMPUTERNAME%")
 
 Set objWMIService = GetObject("winmgmts:\\.\root\cimv2")
@@ -84,7 +84,10 @@ oReg.GetDWORDValue HKEY_LOCAL_MACHINE,strKeyPath,strValueName,dwTVID
 
 
 ' Nastavení cesty k souboru v kořenovém adresáři C:\, relativní cesta k skriptu
-strJsonFilePath = objFSO.BuildPath(strScriptDirectory, "Systeminfo - " & strComputerName & ".json")
+'strJsonFilePath = objFSO.BuildPath(strScriptDirectory, "Systeminfo - " & strComputerName & ".json")
+
+' Změna cesty k souboru na cestu k ploše
+strJsonFilePath = objFSO.BuildPath(strDesktopPath, "Systeminfo - " & strComputerName & ".json")
 
 Set objFileSystem = CreateObject("Scripting.FileSystemObject")
 Set objJsonFile = objFileSystem.CreateTextFile(strJsonFilePath, True)
