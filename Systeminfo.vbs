@@ -30,6 +30,17 @@ Function GetIPAddress(interfaceIndex)
     GetIPAddress = "N/A"
 End Function
 
+' Deklarace funkce pro odstranění diakritiky
+Function RemoveDiacritics(strInput)
+    Dim objRegExp, strOutput
+    Set objRegExp = New RegExp
+    objRegExp.IgnoreCase = True
+    objRegExp.Global = True
+    objRegExp.Pattern = "[^\u0000-\u007F]" ' regulární výraz pro nalezení znaků mimo rozsah ASCII
+    strOutput = objRegExp.Replace(strInput, "") ' nahrazení znaků bez diakritiky
+    RemoveDiacritics = strOutput
+End Function
+
 
 Set colProcessors = objWMIService.ExecQuery("Select * from Win32_Processor")
 For Each objProcessor In colProcessors
@@ -103,7 +114,13 @@ objJsonFile.WriteLine """RAM"": """ & strRAMInfo & ""","
 objJsonFile.WriteLine """TeamviewerID"": """& dwTVID & ""","
 objJsonFile.WriteLine """NetworkAdapters"": ["
 
+Dim adapterCount
+adapterCount = objNetworkAdapters.Count
+Dim adapterIndex
+adapterIndex = 0
+
 For Each strAdapterName In objNetworkAdapters.Keys
+    adapterIndex = adapterIndex + 1
     arrAdapterInfo = objNetworkAdapters.Item(strAdapterName)
     strMacAddress = arrAdapterInfo(0)
     strIPAddress = arrAdapterInfo(1)
@@ -112,35 +129,62 @@ For Each strAdapterName In objNetworkAdapters.Keys
     objJsonFile.WriteLine "    ""AdapterName"": """ & strAdapterName & ""","
     objJsonFile.WriteLine "    ""MacAddress"": """ & strMacAddress & ""","
     objJsonFile.WriteLine "    ""IPAddress"": """ & strIPAddress & """"
-    objJsonFile.WriteLine "  },"
+    If adapterIndex = adapterCount Then
+        objJsonFile.WriteLine "}"
+    Else
+        objJsonFile.WriteLine "},"
+    End If
+    'objJsonFile.WriteLine "  }"
 Next
 
 objJsonFile.WriteLine "],"
 
 objJsonFile.WriteLine """Printers"": ["
 
+Dim printerCount
+printerCount = colInstalledPrinters.Count
+Dim printerIndex
+printerIndex = 0
+
 For Each objPrinter in colInstalledPrinters
+    printerIndex = printerIndex + 1
     objJsonFile.WriteLine "  {"
-    objJsonFile.WriteLine "    ""PrinterName"": """ & objPrinter.Name & ""","
+    objJsonFile.WriteLine "    ""PrinterName"": """ & RemoveDiacritics(objPrinter.Name) & ""","
     objJsonFile.WriteLine "    ""PrinterLocation"": """ & objPrinter.Location & ""","
     objJsonFile.WriteLine "    ""PrinterPortName"": """ & objPrinter.PortName & ""","
     objJsonFile.WriteLine "    ""PrinterDefault"": """ & objPrinter.Default & """"
-    objJsonFile.WriteLine "  },"
+    If printerIndex = printerCount Then
+        objJsonFile.WriteLine "}"
+    Else
+        objJsonFile.WriteLine "},"
+    End If
+    'objJsonFile.WriteLine "  }"
 Next
 
-objJsonFile.WriteLine ""
 objJsonFile.WriteLine "],"
 
 objJsonFile.WriteLine """PortsTCPIP"": ["
 
+Dim portCount
+portCount = colInstalledPorts.Count
+Dim portIndex
+portIndex = 0
+
 for Each objPort in colInstalledPorts
+    portIndex = portIndex + 1
     objJsonFile.WriteLine "  {"
     objJsonFile.WriteLine "    ""PortName"": """ & objPort.Name & """"
-    objJsonFile.WriteLine "  },"
+    If portIndex = portCount Then
+        objJsonFile.WriteLine "}"
+    Else
+        objJsonFile.WriteLine "},"
+    End If
+    'objJsonFile.WriteLine "  }"
 Next
 
-objJsonFile.WriteLine ""
-objJsonFile.WriteLine "]}"
+objJsonFile.WriteLine "]"
+
+objJsonFile.WriteLine "}"
 
 objJsonFile.Close
 
